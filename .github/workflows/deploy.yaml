@@ -10,13 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Connect to EC2 and deploy
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/mern-ecommerce-devops
-            git pull
+            # Install docker-compose (if not present)
+            if ! command -v docker-compose &> /dev/null; then
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
+            # Clone the repo if it doesn't exist
+            if [ ! -d "mern-ecommerce-devops" ]; then
+              git clone https://github.com/${{ github.repository }}.git
+            fi
+
+            cd mern-ecommerce-devops
+
+            # Pull latest code
+            git pull origin main
+
+            # Run the app
             docker-compose up -d --build

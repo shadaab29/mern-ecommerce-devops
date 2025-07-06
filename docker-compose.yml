@@ -22,7 +22,7 @@ services:
     env_file:
       - ./frontend/.env
     ports:
-      - "3000:3000"
+      - "3000:80"   # Fix: maps host:3000 to container's NGINX port:80
     depends_on:
       - backend
 
